@@ -5,15 +5,8 @@
  */
 package main;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Graphics;
-
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.*;
 
-import java.awt.Color;
 import java.io.*;
 import java.util.Timer;
 import java.awt.*;
@@ -45,7 +38,7 @@ class Acc extends JPanel {
         1, 0, 0, 0, 1, 1, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1,
         1, 1, 0, 0, 0, 0, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 1, 0, 1,
         1, 1, 1, 1, 1, 1, 1, 1
     };
    
@@ -136,7 +129,7 @@ class Acc extends JPanel {
     public void renderOffScreen( Graphics g) { 
         // me = g;
        
-        drawMap(g);
+        // drawMap(g);
         drawPlayer(g);
         drawRays(g);
     } 
@@ -167,6 +160,8 @@ class Acc extends JPanel {
 
         double rayXOffset =0, rayYOffset =0;
 
+        double finalDis = 0;
+
         // controls the FOV
         if (rayAngle < 0) {
             rayAngle += 2*Math.PI;
@@ -181,6 +176,7 @@ class Acc extends JPanel {
                 
         for (int r = 0; r < 60; r++) {
             
+            // deafualt distnace
             double disH = 10000000, hx = px, hy = py;
 
            // looking down
@@ -233,7 +229,7 @@ class Acc extends JPanel {
                
             }
 
-           
+            // deafualt distnace
             double disV = 1000000, vx = px, vy = py;
             // vertical 
             dof = 0;
@@ -293,16 +289,53 @@ class Acc extends JPanel {
             if (disH < disV) {
                 rayX = hx;
                 rayY = hy;
+                finalDis = disH;
+
+                g2d.setColor(Color.red);
+
             } if (disH > disV) {
                 rayX = vx;
                 rayY = vy;
+                finalDis = disV;
+
+                g2d.setColor( new Color(153, 0, 0));
             }
 
-            g2d.setColor(Color.red);
-            g2d.drawLine((int) px, (int) py, (int) rayX, (int) rayY);
+           
+            // g2d.drawLine((int) px, (int) py, (int) rayX, (int) rayY);
+
+
+            // DRAW 3d PARTS
+
+            double lineHeight = (mapSize *320) / finalDis;
+            if (lineHeight > 320) {
+                lineHeight = 320;
+            }
+
+            double lineOffest =  160 - (lineHeight / 2);  // line offest
+
+            double ca = pangle - rayAngle;  
+            if (ca < 0) {
+                ca += Math.PI*2;
+            } if (ca > Math.PI*2) {
+                ca -= Math.PI*2;
+            }
+            finalDis = finalDis * Math.cos(ca);
+
+            
+            // g2d.setColor(Color.blue);
+            g2d.setStroke(new BasicStroke(8));
+            g2d.drawLine(r * 8 +530, (int)lineOffest, r*8 + 530, (int)lineHeight + (int)lineOffest);
+
 
 
             rayAngle += Math.toRadians(1);
+            if (rayAngle > Math.PI*2) {
+                rayAngle -= Math.PI*2;
+            }
+            if (rayAngle < 0) {
+                rayAngle += Math.PI*2;
+            }
         }
         
     }
